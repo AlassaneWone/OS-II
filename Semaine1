@@ -36,9 +36,9 @@ int main()
 	srand(time(0));
 	score = printRandoms(lower, upper, count);
 	for ( i = 0; i < 3; i++ ) {
-      printf( "temps sécteur numéro %i : %.3fs ",i+1, score[i]);
+      printf( "temps sécteur numéro %i : %.3fs \n",i+1, score[i]);
     }
-    printf("temps total tour : %.3fs ", score[3]);
+    printf("temps total tour : %.3fs \n", score[3]);
 	
 	
 	
