@@ -32,8 +32,8 @@ int main()
 {
 	int i=0;
 	float *score;
-	int lower = 25000, upper = 45000, count = 3; // temps min/max possible et nombre d'itérations
-	srand(time(0));a
+	float lower = 25000, upper = 45000, count = 3; // temps min/max possible et nombre d'itérations
+	srand(time(0));
 	score = printRandoms(lower, upper, count);
 	for ( i = 0; i < 3; i++ ) {
       printf( "Temps secteur numéro %i : %.3fs  \n",i+1, score[i]);
