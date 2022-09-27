@@ -10,6 +10,17 @@ struct voiture{
 	float tempsTot;
 };
 
+struct meilleurTemps{
+	float temps1;
+	float temps2;
+	float temps3;
+	float tempsTot;
+	int voitQ1;
+	int voitQ2;
+	int voitQ3;
+	int voitTot;
+};
+
 float* Randoms(int lower, int upper,
                             int count)
 {
@@ -74,7 +85,36 @@ struct voiture voitureTour(struct voiture v)
 	return v;
 }
 
+void meilleurTemps(struct voiture voitures[10]){
+	int i;
+	struct meilleurTemps meilleur;
+	meilleur.temps1 = 50;
+	meilleur.temps2 = 50;
+	meilleur.temps3 = 50;
+	meilleur.tempsTot = 500;
+	
+	for(i=0; i <10; i++){
+		if(voitures[i].temps1 < meilleur.temps1){
+			meilleur.temps1 = voitures[i].temps1;
+			meilleur.voitQ1 = i;
+		}
+		if(voitures[i].temps2 < meilleur.temps2){
+			meilleur.temps2 = voitures[i].temps2;
+			meilleur.voitQ2 = i;
+		}
+		if(voitures[i].temps3 < meilleur.temps3){
+			meilleur.temps3 = voitures[i].temps3;
+			meilleur.voitQ3 = i;
+		}
+		if(voitures[i].tempsTot < meilleur.tempsTot){
+			meilleur.tempsTot = voitures[i].tempsTot;
+			meilleur.voitTot = i;
+		}
+	}
+	
+	printf("Les meilleurs temps sont Q1: %.3lf par voiture n%i, Q2: %.3lf par voiture n%i, Q3: %.3lf par voiture n%i, Tot: %.3lf par voiture n%i \n", meilleur.temps1, meilleur.voitQ1, meilleur.temps2, meilleur.voitQ2, meilleur.temps3, meilleur.voitQ3, meilleur.tempsTot, meilleur.voitTot);
 
+}
 
 int main()
 {
@@ -87,7 +127,7 @@ int main()
 		voitures[l] = voitureTour(v);
 			printf("Vérification des valeurs dans main de voiture %i: %.3lf %.3lf %.3lf %.3lf \n", l, voitures[l].temps1, voitures[l].temps2, voitures[l].temps3, voitures[l].tempsTot);
 	}
-
+	meilleurTemps(voitures);
 	return 0;
 }
 
