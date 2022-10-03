@@ -86,7 +86,7 @@ struct voiture voitureTour(struct voiture v)
 	return v;
 }
 
-void meilleurTemps(struct voiture voitures[10]){
+void trouveMeilleurTemps(struct voiture voitures[10]){
 	int i;
 	struct meilleurTemps meilleur;
 	meilleur.temps1 = 50;
@@ -113,8 +113,8 @@ void meilleurTemps(struct voiture voitures[10]){
 		}
 	}
 	
-	printf("Les meilleurs temps sont S1: %.3lf par voiture n%i, S2: %.3lf par voiture n%i, S3: %.3lf par voiture n%i, Tot: %.3lf par voiture n%i \n", meilleur.temps1, meilleur.voitS1, 		 meilleur.temps2, meilleur.voitS2, meilleur.temps3, meilleur.voitS3, meilleur.tempsTot, meilleur.voitTot);
-	
+	printf("Les meilleurs temps sont S1: %.3lf par voiture n%i, S2: %.3lf par voiture n%i, S3: %.3lf Par voiture n%i, Tot: %.3lf par voiture n%i \n ", meilleur.temps1, meilleur.voitS1, 		 meilleur.temps2, meilleur.voitS2, meilleur.temps3, meilleur.voitS3, meilleur.tempsTot, meilleur.voitTot);
+
 }
 
 int main()
@@ -122,14 +122,20 @@ int main()
 	struct voiture voitures[10];
 	struct voiture v;
 	int l;
-	
-	for(l= 0; l<10; l++){
-		srand(time(0)+l);
-		voitures[l] = voitureTour(v);
-		voitures[l].numVoiture = l;
-			printf("Vérification des valeurs dans main de voiture %i: %.3lf %.3lf %.3lf %.3lf \n", l, voitures[l].temps1, voitures[l].temps2, voitures[l].temps3, voitures[l].tempsTot);
+	int k;
+	srand(time(0));
+	for (k = 0; k<5; k++){
+		for(l= 0; l<10; l++){
+
+			voitures[l] = voitureTour(v);
+			voitures[l].numVoiture = l;
+			
+			//printf("Temps de la  voiture %i: %.3lf %.3lf %.3lf %.3lf tour n %i \n", l, voitures[l].temps1, voitures[l].temps2, voitures[l].temps3, voitures[l].tempsTot, k);
+			}
+		printf("Tour numéro : %i ", k);
+		trouveMeilleurTemps(voitures);
 	}
-	meilleurTemps(voitures);
+
 	return 0;
 }
 
