@@ -45,6 +45,30 @@ float* Randoms(int lower, int upper,
     return array;
 }
 
+int Timer(float millis) {
+    //int millis=789562;
+    float secondes=0;
+    float minutes=0;
+    float heures=0;
+    char rep;
+    while(millis >= 1000){
+        millis-=1000;
+        secondes++;
+        if(secondes==60){
+            secondes-=60;
+            minutes++;
+        }
+        if(minutes==60){
+            minutes-=60;
+            heures++;
+        }
+    }
+   
+	printf("%.0f:%.0f:%.0f:%.0f \n", heures ,minutes, secondes ,millis);
+	return 0;
+	
+}
+
 
 struct voiture voitureTour(struct voiture v)
 {
@@ -145,32 +169,21 @@ void meilleurDesMeilleurs(struct meilleurTemps meilleursTemps[5]){
 		}
 	}
 	
-	printf("Les meilleurs temps sont S1: %.3lf par voiture n%i, S2: %.3lf par voiture n%i, S3: %.3lf Par voiture n%i, Tot: %.3lf par voiture n%i \n ", (meilleur.temps1), meilleur.voitS1, 		 meilleur.temps2, meilleur.voitS2, meilleur.temps3, meilleur.voitS3, meilleur.tempsTot, meilleur.voitTot);
-}
-
-
-int Timer(float millis) {
-    //int millis=789562;
-    float secondes=0;
-    float minutes=0;
-    float heures=0;
-    char rep;
-    while(millis >= 1000){
-        millis-=1000;
-        secondes++;
-        if(secondes==60){
-            secondes-=60;
-            minutes++;
-        }
-        if(minutes==60){
-            minutes-=60;
-            heures++;
-        }
-    }
-   
-	printf("%.0f:%.0f:%.0f:%.0f", heures ,minutes, secondes ,millis);
+	printf("S1 par voiture n%i: \t",meilleur.voitS1);
+	Timer(meilleur.temps1);
 	
+	printf("S2 par voiture n%i: \t",meilleur.voitS2);
+	Timer(meilleur.temps2);
+	printf("S3 par voiture n%i: \t",meilleur.voitS3);
+	Timer(meilleur.temps3);
+	
+	printf("S4 par voiture n%i: \t",meilleur.voitTot);
+	Timer(meilleur.tempsTot);
+
 }
+
+
+
 
 int main()
 {
@@ -194,7 +207,6 @@ int main()
 	}
 	
 	meilleurDesMeilleurs(listMeilleurTemps);
-	Timer(27504);
 
 
 	return 0;
