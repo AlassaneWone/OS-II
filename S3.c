@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/types.h>
 
 struct voiture{
 	float temps1;
@@ -21,6 +24,9 @@ struct meilleurTemps{
 	int voitS3;
 	int voitTot;
 };
+
+int shmid;
+
 
 float* Randoms(int lower, int upper,
                             int count)
@@ -137,7 +143,7 @@ struct meilleurTemps trouveMeilleurTemps(struct voiture voitures[10]){
 		}
 	}
 	
-	printf("Les meilleurs temps sont S1: %.3lf par voiture n%i, S2: %.3lf par voiture n%i, S3: %.3lf Par voiture n%i, Tot: %.3lf par voiture n%i \n ", meilleur.temps1, meilleur.voitS1, 		 meilleur.temps2, meilleur.voitS2, meilleur.temps3, meilleur.voitS3, meilleur.tempsTot, meilleur.voitTot);
+	//printf("Les meilleurs temps sont S1: %.3lf par voiture n%i, S2: %.3lf par voiture n%i, S3: %.3lf Par voiture n%i, Tot: %.3lf par voiture n%i \n ", meilleur.temps1, meilleur.voitS1, 		 meilleur.temps2, meilleur.voitS2, meilleur.temps3, meilleur.voitS3, meilleur.tempsTot, meilleur.voitTot);
 	
 	return meilleur;
 }
@@ -169,15 +175,16 @@ void meilleurDesMeilleurs(struct meilleurTemps meilleursTemps[5]){
 		}
 	}
 	
-	printf("S1 par voiture n%i: \t",meilleur.voitS1);
+	//printf("S1 par voiture n%i: \t",meilleur.voitS1);
 	Timer(meilleur.temps1);
 	
-	printf("S2 par voiture n%i: \t",meilleur.voitS2);
+	//printf("S2 par voiture n%i: \t",meilleur.voitS2);
 	Timer(meilleur.temps2);
-	printf("S3 par voiture n%i: \t",meilleur.voitS3);
+	
+	//printf("S3 par voiture n%i: \t",meilleur.voitS3);
 	Timer(meilleur.temps3);
 	
-	printf("S4 par voiture n%i: \t",meilleur.voitTot);
+	//printf("S4 par voiture n%i: \t",meilleur.voitTot);
 	Timer(meilleur.tempsTot);
 
 }
@@ -187,24 +194,30 @@ void meilleurDesMeilleurs(struct meilleurTemps meilleursTemps[5]){
 
 int main()
 {
-	struct voiture voitures[10];
+	//struct voiture voitures[10];
 	struct voiture v;
 	struct meilleurTemps listMeilleurTemps[5];
 	int l;
 	int k;
-
+	
+	shmid= shmget(60, 20*sizeof(struct voiture), IPC_CREAT|0666);
+	
+	struct voiture *circuit = shmat(shmid, 0, 0);
+	
+	
 	srand(time(0));
 	for (k = 0; k<5; k++){
 		for(l= 0; l<10; l++){
 
-			voitures[l] = voitureTour(v);
-			voitures[l].numVoiture = l;
+			circuit[l] = voitureTour(v);
+			circuit[l].numVoiture = l;
 			
 			//printf("Temps de la  voiture %i: %.3lf %.3lf %.3lf %.3lf tour n %i \n", l, voitures[l].temps1, voitures[l].temps2, voitures[l].temps3, voitures[l].tempsTot, k);
 			}
-		printf("Tour numéro : %i ", k);
-		listMeilleurTemps[k] = trouveMeilleurTemps(voitures);
+		//printf("Tour numéro : %i ", k);
+		listMeilleurTemps[k] = trouveMeilleurTemps(circuit);
 	}
+	
 	
 	meilleurDesMeilleurs(listMeilleurTemps);
 
