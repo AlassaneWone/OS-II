@@ -237,7 +237,6 @@ int main()
 	
 	meilleurDesMeilleurs(listMeilleurTemps);
     
-	sh
 
 	return 0;
 }
