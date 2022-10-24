@@ -212,7 +212,7 @@ int main()
 			circuit[l] = voitureTour(v);
 			circuit[l].numVoiture = l;
 			
-			//printf("Temps de la  voiture %i: %.3lf %.3lf %.3lf %.3lf tour n %i \n", l, voitures[l].temps1, voitures[l].temps2, voitures[l].temps3, voitures[l].tempsTot, k);
+			//printf("Temps de la  voiture %i: %.3lf %.3lf %.3lf %.3lf tour n %i \n", l, circuit[l].temps1, circuit[l].temps2, circuit[l].temps3, circuit[l].tempsTot, k);
 			}
 		//printf("Tour numéro : %i ", k);
 		listMeilleurTemps[k] = trouveMeilleurTemps(circuit);
