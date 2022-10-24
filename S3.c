@@ -70,7 +70,7 @@ int Timer(float millis) {
         }
     }
    
-	printf("%.0f:%.0f:%.0f:%.0f \n", heures ,minutes, secondes ,millis);
+	printf("\n %.0f:%.0f:%.0f:%.0f \n", heures ,minutes, secondes ,millis);
 	return 0;
 	
 }
@@ -208,20 +208,36 @@ int main()
 	srand(time(0));
 	for (k = 0; k<5; k++){
 		for(l= 0; l<10; l++){
-
+        	if(k==0){
+           		circuit[0].numVoiture = 59;
+            	circuit[1].numVoiture = 44;
+                circuit[2].numVoiture = 69;
+                circuit[3].numVoiture = 101;
+                circuit[4].numVoiture = 420;
+                circuit[5].numVoiture = 313;
+                circuit[6].numVoiture = 19;
+                circuit[7].numVoiture = 5;
+                circuit[8].numVoiture = 4;
+				circuit[9].numVoiture = 99;
 			circuit[l] = voitureTour(v);
-			circuit[l].numVoiture = l;
 			
-			//printf("Temps de la  voiture %i: %.3lf %.3lf %.3lf %.3lf tour n %i \n", l, circuit[l].temps1, circuit[l].temps2, circuit[l].temps3, circuit[l].tempsTot, k);
 			}
+            
 		//printf("Tour numéro : %i ", k);
 		listMeilleurTemps[k] = trouveMeilleurTemps(circuit);
+        }
 	}
+    int j;
+    printf("Numéro de voiture\t tempsS1\t temps S2\t temps S3\t temps STOT");
+    for (j = 0; j<10; j++){
+    
+    	printf("\n \t %i \t   \t%.3lf     \t%.3lf     \t%.3lf    \t %.3lf", circuit[j].numVoiture, circuit[j].temps1/1000, circuit[j].temps2/1000, circuit[j].temps3/1000, circuit[j].tempsTot/1000);
+        }
 	
 	
 	meilleurDesMeilleurs(listMeilleurTemps);
-
+    
+	sh
 
 	return 0;
 }
-
