@@ -91,7 +91,7 @@ struct voiture voitureTour(struct voiture v)
 	//prend une voiture en paramètre, lui met 4 temps randoms dans temps1/2/3/Tot
 	
 	int k =0;
-	
+	srand(getpid()+time(NULL));
 	float impScore[4] = {500000,500000,500000,5000000} ;
 	int i=0;
 	
@@ -142,7 +142,7 @@ struct meilleurTemps trouveMeilleurTemps(struct voiture voitures[20]){
 		}
 	}
 	
-	//printf("Les meilleurs temps sont S1: %.3lf par voiture n%i, S2: %.3lf par voiture n%i, S3: %.3lf Par voiture n%i, Tot: %.3lf par voiture n%i \n ", meilleur.temps1, meilleur.voitS1, 		 meilleur.temps2, meilleur.voitS2, meilleur.temps3, meilleur.voitS3, meilleur.tempsTot, meilleur.voitTot);
+	printf("Les meilleurs temps sont S1: %.3lf par voiture n%i, S2: %.3lf par voiture n%i, S3: %.3lf Par voiture n%i, Tot: %.3lf par voiture n%i \n ", meilleur.temps1/1000, meilleur.voitS1,meilleur.temps2/1000, meilleur.voitS2, meilleur.temps3/1000, meilleur.voitS3, meilleur.tempsTot/1000, meilleur.voitTot);
 	
 	return meilleur;
 }
@@ -189,8 +189,6 @@ void meilleurDesMeilleurs(struct meilleurTemps meilleursTemps[5]){
 }
 
 
-
-
 int main()
 {
 	//on commence ici
@@ -227,40 +225,38 @@ int main()
 	circuit[19].numVoiture = 913;
 	
 	int i;
-	int pids[20] ;
-	int compteur = 0;
-	pids[0] = getpid();
+	pid_t pid ;
+
+	//pids[0] = getpid();
 	struct voiture v;  
 	struct meilleurTemps meilleurTempsparTour[10];
 	struct meilleurTemps test;
+	
 	for (i = 0; i < 20; ++i) {
-
-		pids[i] = getpid();
-    	if ((pids[i] = fork()) < 0) {
+		pid = fork();
+    	if (pid  < 0) {
    			perror("fork");
    			abort();	
-    	} else if (pids[i] == 0) {		
-    		srand((time(NULL)) * getpid() * i);
-            time_t start_time;
-            start_time=time(NULL);   	
-            while((time(NULL)-start_time)<3){
-            	circuit[i] = voitureTour(circuit[i]);
-            	compteur++; 
+    	} else if (pid == 0) {		  	
+			
+            circuit[i] = voitureTour(circuit[i]);
 
-            }
-            //printf(" temps de voiture %i : %.3f", i, circuit[i].tempsTot/1000);
-        	//printf(" \n %dcompteur \n",compteur);
-        	
-        	//printf(" temps Tot : %.3f", meilleurTempsparTour[0].tempsTot/1000);
         	exit(0);
     	}
 	}
+	sleep(1);
+	test = trouveMeilleurTemps(circuit);
+	
 	int j = 0;
 	printf("Numéro de voiture\t tempsS1\t temps S2\t temps S3\t temps STOT");
-
+	//	
 	for (j = 0; j<20; j++){
-    	printf("\n \t %i \t   \t%.3lf     \t%.3lf     \t%.3lf    \t %.3lf", circuit[j].numVoiture, circuit[j].temps1/1000, circuit[j].temps2/1000, circuit[j].temps3/1000, circuit[j].tempsTot/1000);
+    	printf("\n \t %i \t   \t%.3lf     \t%.3lf     \t%.3lf    \t %.3lf  ", circuit[j].numVoiture, circuit[j].temps1/1000, circuit[j].temps2/1000, circuit[j].temps3/1000, circuit[j].tempsTot/1000);
         }
-	meilleurTempsparTour[0] = trouveMeilleurTemps(circuit); 
-	printf("\n Les meilleurs temps sont S1: %.3lf par voiture n%i, S2: %.3lf par voiture n%i, S3: %.3lf Par voiture n%i, Tot: %.3lf par voiture n%i \n ", meilleurTempsparTour[0].temps1/1000, meilleurTempsparTour[0].voitS1, meilleurTempsparTour[0].temps2/1000, meilleurTempsparTour[0].voitS2, meilleurTempsparTour[0].temps3/1000, meilleurTempsparTour[0].voitS3, meilleurTempsparTour[0].tempsTot/1000, meilleurTempsparTour[0].voitTot);
+
+	//
+	
+	shmdt(circuit);
+	
+	
 }
