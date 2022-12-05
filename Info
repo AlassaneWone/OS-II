@@ -1,0 +1,10 @@
+
+On a 20 voit ne mémoires partagées
+
+Après Multi-process :
+
+  Le lecteur : doit read ou memcpy dans sa mémoire locale en 1 fois, fait son try et affrichage
+  Courtois inversé car 1 lecteur mais plusieurs écritures
+  
+  
+
