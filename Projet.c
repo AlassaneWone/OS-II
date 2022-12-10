@@ -5,6 +5,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/types.h>
+#include <semaphore.h>
 
 struct voiture{
 	float temps1;
@@ -12,6 +13,7 @@ struct voiture{
 	float temps3;
 	float tempsTot;
 	int numVoiture;
+	float bestLap;
 };
 
 struct meilleurTemps{
@@ -86,33 +88,29 @@ const char* Timer(float millis) {
 }
 
 
-struct voiture voitureTour(struct voiture v)
+void voitureTour(struct voiture *v, sem_t *sem)
 {
 	//prend une voiture en paramètre, lui met 4 temps randoms dans temps1/2/3/Tot
-	
+	sem_wait(sem);
 	int k =0;
-	
+	srand(getpid()+time(NULL));
 	float impScore[4] = {500000,500000,500000,5000000} ;
 	int i=0;
 	
 	int lower = 25000, upper = 45000, count = 3; // temps min/max possible et nombre d'itérations ( 3 séquences sur 1 tour)
 	
-	
-	
-      float *score = Randoms(lower, upper, count); // Aeppelle Randoms qui return array[4]
-      int j=0;
-      
-      for(j = 0; j<4; j++){
-      	if(score[j] < impScore[j]){
-      		impScore[j] = score[j];
-      	}
-      }
+    float *score = Randoms(lower, upper, count); // Aeppelle Randoms qui return array[4]
+    int j=0;
     
-	v.temps1 = impScore[0];
-	v.temps2 = impScore[1];
-	v.temps3 = impScore[2];
-	v.tempsTot = impScore[3];
-	return v;
+	v->temps1 = score[0];
+	v->temps2 = score[1];
+	v->temps3 = score[2];
+	v->tempsTot = score[3];
+	
+	if (v->tempsTot < v->bestLap || v->bestLap == 0) {
+    	v->bestLap = v->tempsTot;
+    }
+	sem_post(sem);
 }
 
 struct meilleurTemps trouveMeilleurTemps(struct voiture voitures[20]){
@@ -142,7 +140,7 @@ struct meilleurTemps trouveMeilleurTemps(struct voiture voitures[20]){
 		}
 	}
 	
-	//printf("Les meilleurs temps sont S1: %.3lf par voiture n%i, S2: %.3lf par voiture n%i, S3: %.3lf Par voiture n%i, Tot: %.3lf par voiture n%i \n ", meilleur.temps1, meilleur.voitS1, 		 meilleur.temps2, meilleur.voitS2, meilleur.temps3, meilleur.voitS3, meilleur.tempsTot, meilleur.voitTot);
+	printf("Les meilleurs temps sont S1: %.3lf par voiture n%i, S2: %.3lf par voiture n%i, S3: %.3lf Par voiture n%i, Tot: %.3lf par voiture n%i \n ", meilleur.temps1/1000, meilleur.voitS1,meilleur.temps2/1000, meilleur.voitS2, meilleur.temps3/1000, meilleur.voitS3, meilleur.tempsTot/1000, meilleur.voitTot);
 	
 	return meilleur;
 }
@@ -188,16 +186,37 @@ void meilleurDesMeilleurs(struct meilleurTemps meilleursTemps[5]){
 
 }
 
-
-
+void afficheResult(struct voiture *vdata,sem_t *semaphore){
+	struct voiture copy_voit[20];
+	struct meilleurTemps meilleurTemps;
+	sem_wait(semaphore);
+    for (int i=0; i<20;i++) {
+        copy_voit[i] = vdata[i];
+    }
+    sem_post(semaphore);
+    
+    int j = 0;
+	system("clear");  
+	printf("Numéro de voiture\t tempsS1\t temps S2\t temps S3\t temps STOT");
+	for (j = 0; j<20; j++){
+    	printf("\n \t %i \t   \t%.3lf     \t%.3lf     \t%.3lf    \t %.3lf  ", copy_voit[j].numVoiture, copy_voit[j].temps1/1000, copy_voit[j].temps2/1000, copy_voit[j].temps3/1000, 				copy_voit[j].tempsTot/1000);
+    	printf(" meilleur temps de la voiture %i : %.3lf ", copy_voit[j].numVoiture,copy_voit[j].bestLap/1000);
+	}
+	
+	printf("\n");
+	meilleurTemps = trouveMeilleurTemps(copy_voit);
+}
 
 int main()
 {
-	//on commence ici
-   
+	//mémmoire partagée
     shmid= shmget(60, 20*sizeof(struct voiture), IPC_CREAT|0666);
 	struct voiture *circuit = shmat(shmid, 0, 0);
-	//clear
+	//sémaphore
+	int shmid_sem = shmget(IPC_PRIVATE, sizeof(sem_t), 0666 | IPC_CREAT);
+    sem_t *semaphore = shmat(shmid_sem, NULL, 0);
+    sem_init(semaphore, 1, 1);
+        
 	int m;
 	for (m =0; m<20;m++){
 		circuit[m].temps1 =0;
@@ -227,40 +246,36 @@ int main()
 	circuit[19].numVoiture = 913;
 	
 	int i;
-	int pids[20] ;
-	int compteur = 0;
-	pids[0] = getpid();
+	pid_t pid ;
+
+	//pids[0] = getpid();
 	struct voiture v;  
 	struct meilleurTemps meilleurTempsparTour[10];
 	struct meilleurTemps test;
-	for (i = 0; i < 20; ++i) {
+	
+	for (int j = 0; j <10 ; j++){
+	
+		for (i = 0; i < 20; ++i) {
+			pid = fork();
+    		if (pid  < 0) {
+   				perror("fork");
+   				abort();	
+    		} else if (pid == 0) {		  	
+				//Fils
+            	voitureTour(&circuit[i], semaphore);
 
-		pids[i] = getpid();
-    	if ((pids[i] = fork()) < 0) {
-   			perror("fork");
-   			abort();	
-    	} else if (pids[i] == 0) {		
-    		srand((time(NULL)) * getpid() * i);
-            time_t start_time;
-            start_time=time(NULL);   	
-            while((time(NULL)-start_time)<3){
-            	circuit[i] = voitureTour(circuit[i]);
-            	compteur++; 
-
-            }
-            //printf(" temps de voiture %i : %.3f", i, circuit[i].tempsTot/1000);
-        	//printf(" \n %dcompteur \n",compteur);
-        	
-        	//printf(" temps Tot : %.3f", meilleurTempsparTour[0].tempsTot/1000);
-        	exit(0);
-    	}
+        		exit(0);
+    		}
+		}
+		afficheResult(circuit, semaphore);
 	}
-	int j = 0;
-	printf("Numéro de voiture\t tempsS1\t temps S2\t temps S3\t temps STOT");
+	sleep(1);
+	
+	
 
-	for (j = 0; j<20; j++){
-    	printf("\n \t %i \t   \t%.3lf     \t%.3lf     \t%.3lf    \t %.3lf", circuit[j].numVoiture, circuit[j].temps1/1000, circuit[j].temps2/1000, circuit[j].temps3/1000, circuit[j].tempsTot/1000);
-        }
-	meilleurTempsparTour[0] = trouveMeilleurTemps(circuit); 
-	printf("\n Les meilleurs temps sont S1: %.3lf par voiture n%i, S2: %.3lf par voiture n%i, S3: %.3lf Par voiture n%i, Tot: %.3lf par voiture n%i \n ", meilleurTempsparTour[0].temps1/1000, meilleurTempsparTour[0].voitS1, meilleurTempsparTour[0].temps2/1000, meilleurTempsparTour[0].voitS2, meilleurTempsparTour[0].temps3/1000, meilleurTempsparTour[0].voitS3, meilleurTempsparTour[0].tempsTot/1000, meilleurTempsparTour[0].voitTot);
+	shmdt(circuit);
+	sem_destroy(semaphore);
+	shmctl(shmid, IPC_RMID, NULL);
+	
+	
 }
