@@ -14,6 +14,7 @@ struct voiture{
 	float tempsTot;
 	int numVoiture;
 	float bestLap;
+	int temps_en_course;
 };
 
 struct meilleurTemps{
@@ -86,31 +87,41 @@ const char* Timer(float millis) {
 	return 0;
 	
 }
+void genereTemps(){
 
+
+}
 
 void voitureTour(struct voiture *v, sem_t *sem)
 {
 	//prend une voiture en paramètre, lui met 4 temps randoms dans temps1/2/3/Tot
-	sem_wait(sem);
-	int k =0;
+	
 	srand(getpid()+time(NULL));
 	float impScore[4] = {500000,500000,500000,5000000} ;
 	int i=0;
 	
 	int lower = 25000, upper = 45000, count = 3; // temps min/max possible et nombre d'itérations ( 3 séquences sur 1 tour)
-	
-    float *score = Randoms(lower, upper, count); // Aeppelle Randoms qui return array[4]
-    int j=0;
-    
-	v->temps1 = score[0];
-	v->temps2 = score[1];
-	v->temps3 = score[2];
-	v->tempsTot = score[3];
-	
-	if (v->tempsTot < v->bestLap || v->bestLap == 0) {
-    	v->bestLap = v->tempsTot;
-    }
+	sem_wait(sem);
+	v->temps_en_course = 0;
 	sem_post(sem);
+	while( v->temps_en_course < 100000000){
+	
+    	sem_wait(sem);
+        float *score = Randoms(lower, upper, count); // Aeppelle Randoms qui return array[4]
+		v->temps1 = score[0];
+		v->temps2 = score[1];
+		v->temps3 = score[2];
+		v->tempsTot = score[3];
+		
+		v->temps_en_course += v->temps1 + v->temps2 + v->temps3;
+		
+		if (v->tempsTot < v->bestLap || v->bestLap == 0) {
+    		v->bestLap = v->tempsTot;
+    	}
+		sem_post(sem);
+		sleep(1);
+	}
+	
 }
 
 struct meilleurTemps trouveMeilleurTemps(struct voiture voitures[20]){
@@ -122,19 +133,19 @@ struct meilleurTemps trouveMeilleurTemps(struct voiture voitures[20]){
 	meilleur.tempsTot = 500000;
 	
 	for(i=0; i <20; i++){
-		if(voitures[i].temps1 < meilleur.temps1){
+		if(voitures[i].temps1 < meilleur.temps1 && voitures[i].temps1 > 0){
 			meilleur.temps1 = voitures[i].temps1;
 			meilleur.voitS1 = voitures[i].numVoiture;
 		}
-		if(voitures[i].temps2 < meilleur.temps2){
+		if(voitures[i].temps2 < meilleur.temps2 && voitures[i].temps2 > 0){
 			meilleur.temps2 = voitures[i].temps2;
 			meilleur.voitS2 = voitures[i].numVoiture;
 		}
-		if(voitures[i].temps3 < meilleur.temps3){
+		if(voitures[i].temps3 < meilleur.temps3 && voitures[i].temps3 > 0){
 			meilleur.temps3 = voitures[i].temps3;
 			meilleur.voitS3 = voitures[i].numVoiture;
 		}
-		if(voitures[i].tempsTot < meilleur.tempsTot){
+		if(voitures[i].tempsTot < meilleur.tempsTot && voitures[i].tempsTot > 0){
 			meilleur.tempsTot = voitures[i].tempsTot;
 			meilleur.voitTot = voitures[i].numVoiture;
 		}
@@ -253,29 +264,33 @@ int main()
 	struct meilleurTemps meilleurTempsparTour[10];
 	struct meilleurTemps test;
 	
-	for (int j = 0; j <10 ; j++){
 	
-		for (i = 0; i < 20; ++i) {
-			pid = fork();
-    		if (pid  < 0) {
-   				perror("fork");
-   				abort();	
-    		} else if (pid == 0) {		  	
-				//Fils
-            	voitureTour(&circuit[i], semaphore);
-
-        		exit(0);
-    		}
-		}
+	for (i; i < 20; i++) {
+            pid = fork();
+            if (pid == 0) break;
+    }
+	
+    if (pid  < 0) {
+   		perror("fork");
+   		abort();	
+    } else if (pid == 0) {		  	
+		//Fils
+			
+	    voitureTour(&circuit[i], semaphore);
+        exit(0);
+    }else{
 		afficheResult(circuit, semaphore);
-	}
-	sleep(1);
+    	sleep(1);
+    }
+    		
+
+	afficheResult(circuit,semaphore);
 	
-	
+
 
 	shmdt(circuit);
 	sem_destroy(semaphore);
 	shmctl(shmid, IPC_RMID, NULL);
-	
+	exit(0);
 	
 }
