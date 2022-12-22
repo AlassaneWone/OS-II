@@ -14,7 +14,7 @@ typedef struct voiture{
     //Meilleur temps pour chaque secteur (n° = index+1)
     float meilleurTour;            
     //meilleur tour
-    int tempTotal;          
+    int tempsTotal;          
     //Temps de course
     int tour;               
     //Numéro du tour actuel

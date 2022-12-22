@@ -1,14 +1,53 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <math.h>
 #include <string.h>
 #include <semaphore.h>
 #include "const.h"
 #include "voiture.h"
 
 Voiture copieVoit[NBRVOITURE];
+
+char* FormatTemps(float milliseconds) {
+	static char time_str[20]; 
+	int hours ;
+	int minutes ; 
+	int seconds ;
+	float milliseconds_remainder;
+	hours = (int)milliseconds / 3600000;  // 3600000 milliseconds en 1 heure
+	milliseconds = fmod(milliseconds, 3600000);  // remainder after hours
+
+	minutes = (int)milliseconds / 60000;  // 60000 milliseconds en 1 minute
+	milliseconds = fmod(milliseconds, 60000);  // remainder after minutes
+
+	seconds = (int)milliseconds / 1000;  // 1000 milliseconds en 1 seconde
+	milliseconds_remainder = fmod(milliseconds, 1000);  // reste 
+
+	sprintf(time_str, "%d:%d:%d:%.0f", hours, minutes, seconds, milliseconds_remainder);
+	return time_str;
+}
+
+char* FormatTemps2(float milliseconds) {
+	// Deuxième fonction sinon, bug étrange lors de l'utilisation sur 2 variable différentes
+	static char time_str[20]; 
+	int hours ;
+	int minutes ; 
+	int seconds ;
+	float milliseconds_remainder;
+	hours = (int)milliseconds / 3600000;  // 3600000 milliseconds en 1 heure
+	milliseconds = fmod(milliseconds, 3600000);  // remainder after hours
+
+	minutes = (int)milliseconds / 60000;  // 60000 milliseconds en 1 minute
+	milliseconds = fmod(milliseconds, 60000);  // remainder after minutes
+
+	seconds = (int)milliseconds / 1000;  // 1000 milliseconds en 1 seconde
+	milliseconds_remainder = fmod(milliseconds, 1000);  // reste 
+
+	sprintf(time_str, "%d:%d:%d:%.0f", hours, minutes, seconds, milliseconds_remainder);
+	return time_str;
+}
 
 int fctTri(const void *a, const void *b){
 	//Fonction qui permet de trier, avec qsort, les voitures en fonction de leur meilleur tour 
@@ -40,7 +79,7 @@ int diffTempsFinal(int i){
         return 0;
     }
     else if (i > 0){
-        return (copieVoit[i].tempTotal - copieVoit[i-1].tempTotal);
+        return (copieVoit[i].tempsTotal - copieVoit[i-1].tempsTotal);
     }else{
         return 0;
     }
@@ -83,7 +122,8 @@ void affiche(Voiture *voitPartage,sem_t *semaphore, int NBRVOITCOURSE){
     
     char *pit;
     char *out;
-
+	char* tempsTour;
+	char* tempsTot;
     sem_wait(semaphore);
 	// On va recuperer les données et les copiees
     for (int i=0; i<NBRVOITCOURSE;i++) {
@@ -96,7 +136,7 @@ void affiche(Voiture *voitPartage,sem_t *semaphore, int NBRVOITCOURSE){
 	system("clear"); // Vide la console
     printf("\n");
     // Affiche les titres
-    printf(" %-*s  %*s  %*s  %*s  %*s  %*s  %*s  %*s  %*s  %*s \n",10,"Classement",10,"Pilote",10,"S1",10,"S2",10,"S3",10,"Meilleur Tour",10,"TempsDif",5,"Tours",5,"PIT",5,"OUT");
+    printf(" %-*s  %*s  %*s  %*s  %*s  %*s  %*s  %*s  %*s  %*s %*s \n",10,"Classement",10,"Pilote",10,"S1",10,"S2",10,"S3",12,"Meilleur Tour",10,"TempsDif",5,"Tours",5,"PIT",5,"OUT",5, "Temps passé en course");
     printf("\n");
 
 
@@ -114,13 +154,16 @@ void affiche(Voiture *voitPartage,sem_t *semaphore, int NBRVOITCOURSE){
             out=" ";
         }
 		// Affiches les données
-    	printf(" %-*d  %*d  %*.3f  %*.3f  %*.3f  %*.3f  %*.3f  %*d  %*s  %*s \n",
-                   10,i+1,10,copieVoit[i].pilote,10,copieVoit[i].secteur[0]/1000,10, copieVoit[i].secteur[1]/1000,10,copieVoit[i].secteur[2]/1000,10,copieVoit[i].meilleurTour/1000,10,dif/1000,5,copieVoit[i].tour,8, pit,5, out);
+		tempsTour = FormatTemps(copieVoit[i].meilleurTour);
+		tempsTot = FormatTemps2(copieVoit[i].tempsTotal);
+    	printf(" %-*d  %*d  %*.3f  %*.3f  %*.3f  %*s  %*.3f  %*d  %*s  %*s  %*s\n",
+                   10,i+1,10,copieVoit[i].pilote,10,copieVoit[i].secteur[0]/1000,10, copieVoit[i].secteur[1]/1000,10,copieVoit[i].secteur[2]/1000,12,tempsTour,10,dif/1000,5,copieVoit[i].tour,8, pit,5, out, 5, tempsTot);
         
 
     }
 	// Affiche les meilleurs temps S1,S2,S3 et Tour
-    printf("\n Meilleur tour     Pilote %d\t %.3f   \n",copieVoit[quiMeilleurTour()].pilote, copieVoit[quiMeilleurTour()].meilleurTour/1000);
+	char* tempsMeilleurTout = FormatTemps(copieVoit[quiMeilleurTour()].meilleurTour);
+    printf("\n Meilleur tour     Pilote %d\t %s   \n",copieVoit[quiMeilleurTour()].pilote, tempsMeilleurTout);
 
     printf("\n Meilleur S1  \t   Pilote %d\t %.3f   \n", copieVoit[quiMeilleurSecteur(1)].pilote, copieVoit[quiMeilleurSecteur(1)].meilleurSecteur[0]/1000);
     printf(" Meilleur S2  \t   Pilote %d\t %.3f   \n", copieVoit[quiMeilleurSecteur(2)].pilote, copieVoit[quiMeilleurSecteur(2)].meilleurSecteur[1]/1000);
@@ -137,10 +180,10 @@ int fctTriFinal(const void *a, const void *b){
 	if(voit1->etat==2 && voit1->tour < voitSuivante->tour){
 		// Si voit1 est out ET si voit1 est derrière voitSuivante
         return 1;
-    }else if(voitSuivante->etat==2 || voit1->tempTotal < voitSuivante->tempTotal){
+    }else if(voitSuivante->etat==2 || voit1->tempsTotal < voitSuivante->tempsTotal){
     	// Si voitSuivante est out OU voit1 derrière voitSuuivante
         return -1;
-    }else if(voit1->tempTotal > voitSuivante->tempTotal && voit1->etat!=2){
+    }else if(voit1->tempsTotal > voitSuivante->tempsTotal && voit1->etat!=2){
     	// Si voit1 devant voitSuivante ET voit1 n'est pas out
         return 1;
     }else{
@@ -153,6 +196,8 @@ void afficheFinal(Voiture *voitPartage,sem_t *semaphore){
     float dif;
     char *pit;
     char *out;
+    char* tempsTour;
+	char* tempsTot;
     system("clear"); // vide la console
 
     sem_wait(semaphore);
@@ -187,7 +232,8 @@ void afficheFinal(Voiture *voitPartage,sem_t *semaphore){
 
     }
 	// Affiche les meilleurs temps S1,S2,S3 et Tour
-    printf("\n Meilleur tour \t   Pilote %d\t %.3f   \n",copieVoit[quiMeilleurTour()].pilote, copieVoit[quiMeilleurTour()].meilleurTour/1000);
+	char* tempsMeilleurTout = FormatTemps(copieVoit[quiMeilleurTour()].meilleurTour);
+    printf("\n Meilleur tour \t   Pilote %d\t %s   \n",copieVoit[quiMeilleurTour()].pilote, tempsMeilleurTout);
     printf("\n Meilleur S1  \t   Pilote %d\t %.3f   \n", copieVoit[quiMeilleurSecteur(1)].pilote, copieVoit[quiMeilleurSecteur(1)].meilleurSecteur[0]/1000);
     printf(" Meilleur S2  \t   Pilote %d\t %.3f   \n", copieVoit[quiMeilleurSecteur(2)].pilote, copieVoit[quiMeilleurSecteur(2)].meilleurSecteur[1]/1000);
     printf(" Meilleur S3  \t   Pilote %d\t %.3f   \n", copieVoit[quiMeilleurSecteur(3)].pilote, copieVoit[quiMeilleurSecteur(3)].meilleurSecteur[2]/1000);
@@ -221,8 +267,12 @@ void sauvegardeClassement(Voiture *voitPartage, int typeCourse,int NBRVOITCOURSE
 		case 6:
 			file = open("classement/Q3",O_WRONLY);
 			break;
-		case 7:
-			file = open("classement/Final",O_WRONLY);
+		default:
+			if (typeCourse == 7){
+				file = open("classement/Final",O_WRONLY);
+			}else if (typeCourse == 8){
+				file = open("classement/Sprint",O_WRONLY);
+			}
 			if (file<0) {
             	perror("FILE ERROR ");
             	return;

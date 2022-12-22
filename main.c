@@ -14,17 +14,21 @@
 #include "affiche.h"
 
 int PILOTES[20];   
-int TEMPSMAXCOURSE = TEMPS_P;
+int TEMPSMAXCOURSE = 0;
 int NBRVOITCOURSE = 20;
+int TOURMAXCOURSE = TOURDEFINAL;
 
 int quelCourse(char *argv[]) {
 	// détermine le tpye de la course en fonction de l'agument donné par l'utilisateur ( de 1(=P1) à 7(=Final))
 	int type = 0;
   	if (strcmp(argv[1], "P1") == 0) {
+  		TEMPSMAXCOURSE = TEMPS_P;
     	type = 1;
   	} else if (strcmp(argv[1], "P2") == 0) {
+  		TEMPSMAXCOURSE = TEMPS_P;
     	type = 2;
   	} else if (strcmp(argv[1], "P3") == 0) {
+  		TEMPSMAXCOURSE = TEMPS_P;
     	type = 3;
   	} else {
     	switch (argv[1][0]) {
@@ -44,6 +48,9 @@ int quelCourse(char *argv[]) {
       		case 'F':
         		type = 7;
         		break;
+        	case 'S':
+        		type = 8;
+        		TOURMAXCOURSE = 14;
     	}
   	}
   	return type;
@@ -136,8 +143,8 @@ int main(int argc, char *argv[]){
     	//On lance les courses
     	if (typeCourse < 7) {
     		course(&voit[i], PILOTES[i], TEMPSMAXCOURSE, semaphore);
-		}else {
-            coursefinal(&voit[i], PILOTES[i], semaphore);
+		}else if (typeCourse >=7) {
+            coursefinal(&voit[i], PILOTES[i], semaphore, TOURMAXCOURSE);
         }
         exit(0);
 	}
@@ -152,23 +159,24 @@ int main(int argc, char *argv[]){
 			
 		  	for (int j = 0; j < NBRVOITCOURSE; j++) {
 		  		//Compte le nombre de voiture qui ont finie
-				if ((typeCourse < 7 && voit[j].tempTotal > TEMPSMAXCOURSE) || (typeCourse == 7 && voit[j].tour >= TOURDEFINAL) || voit[j].etat == 2) {
+				if ((typeCourse < 7 && voit[j].tempsTotal > 3600000) || (typeCourse >= 7 && voit[j].tour >= TOURMAXCOURSE) || voit[j].etat == 2) {
 					//Compte les tours si Final, Compte le temps pour les autres
 			  		nmbr_voiture_finie++;
 				}
-				if (nmbr_voiture_finie == NBRVOITCOURSE) {
+				if (nmbr_voiture_finie == NBRVOITCOURSE +1) {
 			  		is_course_finie = true;
 				}
 		  	}
 		  	//Affiches les temps
 		  	if (typeCourse < 7){
 		  		affiche(voit, semaphore, NBRVOITCOURSE);
-		  	}else if (typeCourse == 7){
+		  	}else if (typeCourse >= 7){
 		  		afficheFinal(voit, semaphore);
 		  	}
 		  	
 		  	sleep(1); // Délai d'affichage, sinon illisble
 		}
+
 
         sauvegardeClassement(voit, typeCourse, NBRVOITCOURSE); // On sauvegarde les classements dans le dossier classement
         

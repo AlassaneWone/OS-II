@@ -25,7 +25,10 @@ int crash(){
 
     return 0;
 }
-
+int tourRandom(){
+	//Récupère un tour random 
+	 return rand() % (10 + 1 - 1) + 1;
+}
 
 int stand(){
 	// Return 1 si Pit, sinon 0

@@ -16,11 +16,11 @@ void course(Voiture *voiture,int numVoiture,int tempsCourse, sem_t *sem){
     voiture->pilote = numVoiture;
     voiture->etat = 0;
     voiture->tour = 0;
-    voiture->tempTotal = 0;
+    voiture->tempsTotal = 0;
     sem_post(sem);
 
 
-    while (voiture->tempTotal < tempsCourse) {
+    while (voiture->tempsTotal < tempsCourse || voiture->etat != 2) {
 
         sem_wait(sem);
         if(crash() || voiture->out == 1){//Si crash
@@ -69,7 +69,7 @@ void course(Voiture *voiture,int numVoiture,int tempsCourse, sem_t *sem){
 
 
             //Ajout du temps total
-            voiture->tempTotal += voiture->secteur[0]+voiture->secteur[1]+voiture->secteur[2];
+            voiture->tempsTotal += voiture->secteur[0]+voiture->secteur[1]+voiture->secteur[2];
 
             //Ajout d'un tour
             voiture->tour += 1;
@@ -96,7 +96,7 @@ void course(Voiture *voiture,int numVoiture,int tempsCourse, sem_t *sem){
         sleep(1); //Delai entre chaque tour sinon on ne peut pas voir l'évolution de la course !
     }
 }
-void coursefinal(Voiture *voiture,int numVoiture,sem_t *sem) {
+void coursefinal(Voiture *voiture,int numVoiture,sem_t *sem, int tourMax) {
 
     srand(getpid());
 	// Au début de la course, on met les états initiaux
@@ -104,11 +104,11 @@ void coursefinal(Voiture *voiture,int numVoiture,sem_t *sem) {
     voiture->pilote = numVoiture;
     voiture->etat = 0;
     voiture->tour = 0;
-    voiture->tempTotal = 0;
+    voiture->tempsTotal = 0;
     sem_post(sem);
+	int tourPit = tourRandom();
 
-
-    while (voiture->tour <= TOURDEFINAL - 1) {
+    while (voiture->tour < tourMax || voiture->etat != 2 ) {
 
         sem_wait(sem);
 
@@ -137,8 +137,13 @@ void coursefinal(Voiture *voiture,int numVoiture,sem_t *sem) {
             voiture->secteur[1] = tempsRandom();
 
             //Si Arrèt au pit
-            if(stand()){
+            if(stand() && tourPit != voiture->tour){
             	//Pit uniquement en s3
+                voiture->secteur[2] = tempsRandom()+randomPitTime();
+                voiture->pit = 1;
+                voiture->etat = 1;
+            }else if( tourPit == voiture->tour){
+            	//Pit forcé, uniquement en s3
                 voiture->secteur[2] = tempsRandom()+randomPitTime();
                 voiture->pit = 1;
                 voiture->etat = 1;
@@ -151,7 +156,7 @@ void coursefinal(Voiture *voiture,int numVoiture,sem_t *sem) {
 
 
             //Ajout du temps total
-            voiture->tempTotal += voiture->secteur[0]+voiture->secteur[1]+voiture->secteur[2];
+            voiture->tempsTotal += voiture->secteur[0]+voiture->secteur[1]+voiture->secteur[2];
 
             //Ajout d'un tour
             voiture->tour += 1;
