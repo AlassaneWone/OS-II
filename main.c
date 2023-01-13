@@ -63,8 +63,7 @@ void initPilote(int typeCourse){
     char *listePilote = malloc(sizeof(char)*200); //Pour garder en mémoire les numéros de pilote
     char *token;
 
-    int pilotePrimaire[NBRVOITURE] = {44,77,11,33,3,4,5,18,14,31,16,55,10,22,7,99,9,47,6,63};  //Numéros des voitures
-
+    int pilotePrimaire[NBRVOITURE] = {44, 63, 1, 11, 55, 16, 4, 3, 14, 31, 10, 22, 5, 18, 6, 23, 77, 24, 47, 9 };
 	int l =0;
     if(typeCourse == 5 || typeCourse == 6 ){ 
     	// si course avec des pilotes de départ spécial
