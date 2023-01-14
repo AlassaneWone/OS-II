@@ -13,7 +13,7 @@ Il permet de simuler des courses de Formule 1
 	```sh
 	gcc -pthread *.c -lm
 	```
-3. exécuter avec un paramètre :
+3. exécuter avec un paramètre (P1,P2,P3,Q1,Q2,Q3,F,S) :
 	```sh
 	./a.out P1
 	```
