@@ -158,7 +158,7 @@ int main(int argc, char *argv[]){
 			
 		  	for (int j = 0; j < NBRVOITCOURSE; j++) {
 		  		//Compte le nombre de voiture qui ont finie
-				if ((typeCourse < 7 && voit[j].tempsTotal > 3600000) || (typeCourse >= 7 && voit[j].tour >= TOURMAXCOURSE) || voit[j].etat == 2) {
+				if ((typeCourse < 7 && voit[j].tempsTotal > TEMPSMAXCOURSE) || (typeCourse >= 7 && voit[j].tour >= TOURMAXCOURSE) || voit[j].etat == 2) {
 					//Compte les tours si Final, Compte le temps pour les autres
 			  		nmbr_voiture_finie++;
 				}
